@@ -9,19 +9,11 @@ body::before { opacity: .17; }
 .ticker-track.is-ready { animation: ticker-cycle var(--ticker-duration) linear infinite; }
 @keyframes ticker-cycle { to { transform: translate3d(calc(-1 * var(--ticker-cycle)), 0, 0); } }
 
-/* Each letter has its own quick scan and fill. Keyboard focus and taps replay the word. */
-.interactive-word { display: inline-flex; white-space: nowrap; cursor: pointer; outline-offset: 10px; }
-.interactive-letter { position: relative; display: inline-block; color: transparent; -webkit-text-stroke: 1.5px var(--text); transition: transform .22s ease; }
-.interactive-letter::before, .interactive-letter::after { content: attr(data-letter); position: absolute; inset: 0; pointer-events: none; }
-.interactive-letter::before { color: var(--green); -webkit-text-stroke: 0; opacity: 0; background: repeating-linear-gradient(0deg, transparent 0 3px, var(--green) 3px 5px, transparent 5px 8px); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.interactive-letter::after { color: var(--green); -webkit-text-stroke: 0; opacity: 0; clip-path: inset(100% 0 0 0); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--green) 70%, transparent)); }
-.interactive-letter:hover, .interactive-word:focus-visible .interactive-letter, .interactive-word.is-active .interactive-letter { transform: translateY(-3px); }
-.interactive-letter:hover::before { animation: letter-scan .4s steps(6, end) both; }
-.interactive-letter:hover::after { animation: letter-fill .45s steps(7, end) forwards; }
-.interactive-word.is-active .interactive-letter::before, .interactive-word:focus-visible .interactive-letter::before { animation: letter-scan .4s steps(6, end) both; animation-delay: calc(var(--letter-index) * 65ms); }
-.interactive-word.is-active .interactive-letter::after, .interactive-word:focus-visible .interactive-letter::after { animation: letter-fill .45s steps(7, end) forwards; animation-delay: calc(var(--letter-index) * 65ms); }
-@keyframes letter-scan { 0% { opacity: 0; transform: translateY(8px); } 30%, 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
-@keyframes letter-fill { 0% { opacity: .2; clip-path: inset(100% 0 0 0); } 55% { opacity: 1; clip-path: inset(42% 0 0 0); } 100% { opacity: 1; clip-path: inset(0 0 0 0); } }
+/* Fill the real glyphs so narrow letters cannot be clipped by duplicate text layers. */
+.interactive-word { display: inline-flex; max-width: 100%; white-space: nowrap; letter-spacing: -.025em; cursor: pointer; outline-offset: 10px; }
+.interactive-letter { display: inline-block; color: transparent; -webkit-text-stroke: 1.5px var(--text); transition: color .25s ease, -webkit-text-stroke-color .25s ease, transform .25s ease; }
+.interactive-letter:hover { color: var(--green); -webkit-text-stroke-color: var(--green); transform: translateY(-3px); }
+.interactive-letter.is-filled { color: var(--green); -webkit-text-stroke-color: var(--green); transform: translateY(-2px); }
 
 /* A tiny interactive website builder replaces the portrait in the hero. */
 .builder-scene { --tilt-x: 0deg; --tilt-y: 0deg; position: relative; min-width: 0; min-height: 565px; isolation: isolate; transform: translate3d(0, var(--hero-shift, 0px), 0); }
@@ -80,7 +72,7 @@ body::before { opacity: .17; }
   .gallery-heading { flex-direction: column; align-items: start; gap: 18px; }.gallery-heading p { max-width: 100%; }.gallery-tabs { margin-top: 24px; }.gallery-stage { padding: 14px; }.gallery-browser { border-radius: 12px; }.gallery-viewport { min-height: 320px; height: 390px; }.gallery-foot { flex-direction: column; gap: 9px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .builder-scene, .builder-window, .interactive-letter { transform: none !important; }.builder-preview-main, .interactive-letter::before, .interactive-letter::after { animation: none !important; }.interactive-letter:hover::after, .interactive-word:focus-visible .interactive-letter::after, .interactive-word.is-active .interactive-letter::after { opacity: 1; clip-path: inset(0 0 0 0); }.motion-ready .reveal-on-scroll { opacity: 1; transform: none; }
+  .builder-scene, .builder-window, .interactive-letter { transform: none !important; }.builder-preview-main { animation: none !important; }.interactive-letter { transition: none !important; }.interactive-letter.is-filled { color: var(--green); -webkit-text-stroke-color: var(--green); }.motion-ready .reveal-on-scroll { opacity: 1; transform: none; }
 }
 
 /* An editorial tool wall sits between services and selected work. */
@@ -105,3 +97,22 @@ body::before { opacity: .17; }
 @media (max-width: 700px) { .skills-heading { display: block; }.skills-heading p { margin-top: 22px; }.skills-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }.skill-tile { min-height: 145px; padding: 15px; }.skill-name { font-size: 15px; } }
 @media (max-width: 430px) { .skills-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .ticker-track.is-ready { animation: none; } }
+
+/* Keep the stacked cards interactive and readable at every viewport width. */
+.service-card:hover { background: color-mix(in srgb, var(--surface) 75%, var(--green)); }
+@media (max-width: 850px) {
+  .services-grid > .service-card { position: sticky; top: 84px; }
+  .services-grid > .service-card:nth-child(2) { top: 98px; }
+  .services-grid > .service-card:nth-child(3) { top: 112px; }
+  .main-nav { background: color-mix(in srgb, var(--page) 88%, transparent); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+}
+@media (max-width: 600px) {
+  .interactive-word { font-size: clamp(42px, 11.5vw, 66px); letter-spacing: 0; }
+  .project-visual::before { top: -28%; right: -18%; width: 76%; border: 1px solid #ffffff70; box-shadow: 0 0 0 25px #ffffff12, 0 0 0 65px #ffffff08; }
+  .project-orbit-media { top: -28%; right: -18%; width: 76%; }
+  .project-orbit-media img { object-position: center 20%; transform: translateY(14%); }
+  .project-card a:hover .project-orbit-media img { transform: translateY(14%) scale(1.08); }
+  .services-grid > .service-card { top: 70px; }
+  .services-grid > .service-card:nth-child(2) { top: 84px; }
+  .services-grid > .service-card:nth-child(3) { top: 98px; }
+}
